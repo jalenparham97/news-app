@@ -1,5 +1,5 @@
 <template>
-  <div class="md-layout md-alignment-center" style="margin: 5em 0;">
+  <div class="md-layout md-alignment-center" style="margin: 3em 0;">
     <div class="md-layout-item md-size-75 md-small-size-80 md-xsmall-100">
       <!-- Headline Markup -->
       <md-card class="main-card">
