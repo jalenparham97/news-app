@@ -39,23 +39,27 @@
       </form>
 
       <!-- Comments -->
-      <md-list class="md-triple-line" style="margin-top: 2em;" v-if="headline.comments">
-        <md-list-item class="list-item" v-for="comment in headline.comments" :key="comment.id">
-          <md-avatar><img :src="comment.user.avatar" :alt="comment.user.username"></md-avatar>
-          <div class="md-list-item-text">
+      <ul class="comments">
+        <li class="comment" v-for="comment in headline.comments" :key="comment.id">
+          <div class="comment-data">
+            <md-avatar><img :src="comment.user.avatar" :alt="comment.user.username"></md-avatar>
             <div class="comment-meta-data">
               <span>{{ comment.user.username }}</span>
               <span>{{ commentTime(comment.publishedAt) }}</span>
+              <div class="comment-text">
+                <p>{{ comment.text }}</p>
+              </div>
+              <div class="likes">
+                <md-button class="md-icon-button md-ripple like-btn" @click="likeComment(comment.id)" :disabled="loading || !user">
+                  <md-icon class="icon">thumb_up</md-icon>
+                </md-button>
+                <span class="like-count" v-if="comment.likes !== 0">{{ comment.likes }}</span>
+              </div>
             </div>
-            <p class="comment-text">{{ comment.text }}</p>
           </div>
+        </li>
+      </ul>
 
-          <md-badge class="md-primary" md-position="bottom" :md-content="comment.likes" />
-          <md-button @click="likeComment(comment.id)" class="md-icon-button" :disabled="loading || !user">
-            <md-icon>thumb_up</md-icon>
-          </md-button>
-        </md-list-item>
-      </md-list>
 
       <!-- Back Button -->
       <md-button class="md-fab md-fab-bottom-right md-fixed md-primary" @click="$router.go(-1)">
@@ -121,17 +125,58 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
   .actions {
     margin-top: -25px;
+    margin-left: -8px;
+  }
+
+  .comments {
+    list-style: none;
+    padding: 0px;
+    margin-top: 50px;
+  }
+
+  .comment {
+    margin-top: 15px;
+  }
+
+  .md-avatar {
+    margin: 0px 10px 0px 0px;
+  }
+
+  .comment-data {
+    display: flex;
   }
 
   .comment-meta-data span {
     margin-right: 10px;
+
+    &:first-child {
+      font-weight: 700;
+    }
   }
 
   .comment-text {
-    margin-top: 10px;
+    margin-top: -5px;
+  }
+
+  .likes {
+    display: flex;
+    align-items: center;
+    margin-top: -10px;
+  }
+
+  .like-btn {
+    margin: 0px 0px 0px -12px;
+  }
+
+  .icon {
+    font-size: 18px !important;
+  }
+
+  @media only screen and (max-width: 700px) {
+    
   }
 </style>
 

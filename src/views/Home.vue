@@ -415,6 +415,7 @@ export default {
     .toolbar-small {
       display: flex;
       justify-content: flex-end;
+      align-items: center;
     }
 
     .avatar {
