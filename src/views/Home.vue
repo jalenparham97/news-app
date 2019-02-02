@@ -11,7 +11,7 @@
         NewsCycle
       </router-link>
 
-      <div class="md-toolbar-section-end">
+      <div class="md-toolbar-section-end toolbar">
         <template v-if="isAuthenticated">
           <md-button>
             <md-avatar><img :src="user.avatar" alt="user.email"></md-avatar>
@@ -71,6 +71,16 @@
           Categories
         </md-button>
       </div>
+
+      <div class="md-toolbar-section-end toolbar-small">
+        <md-button class="md-primary" @click="showSearchDialog = true">Search</md-button>
+        <md-button 
+          class="md-accent" 
+          @click="showRightpanel = true"
+        >
+          Categories
+        </md-button>
+      </div>
     </md-toolbar>
 
     <!-- Personal News Feed (Left Drawer) -->
@@ -79,17 +89,25 @@
         <span class="md-title">Personal Feed</span>
       </md-toolbar>
 
-       <md-progress-bar v-if="loading" md-mode="indeterminate"></md-progress-bar>
+      <md-progress-bar v-if="loading" md-mode="indeterminate"></md-progress-bar>
 
-       <md-field class="country">
-         <label for="country">Country</label>
-         <md-select @input="changeCountry" :value="country" name="country" id="country">
-           <md-option value="us">United States</md-option>
-           <md-option value="ca">Canada</md-option>
-           <md-option value="de">Germany</md-option>
-           <md-option value="ru">Russia</md-option>
-         </md-select>
-       </md-field>
+      <md-field class="country">
+        <label for="country">Country</label>
+        <md-select @input="changeCountry" :value="country" name="country" id="country">
+          <md-option value="us">United States</md-option>
+          <md-option value="ca">Canada</md-option>
+          <md-option value="de">Germany</md-option>
+          <md-option value="ru">Russia</md-option>
+        </md-select>
+      </md-field>
+
+      <div class="avatar" v-if="user">
+        <div class="img-avatar">
+          <md-avatar class="img"><img :src="user.avatar" alt="user.email"></md-avatar>
+          {{ username }}
+        </div>
+        <md-button @click="logutUser" class="logout-drawer-btn">Logout</md-button>
+      </div>
 
       <!-- Default Markup (if Feed Empty) -->
       <md-empty-state class="md-primary" v-if="feed.length === 0 && !user" md-icon="bookmarks" md-label="Nothing in Feed" md-description="Login to bookmark headlines">
@@ -189,6 +207,8 @@
         </ul>
       </md-content>
     </div>
+
+    <span class="powered-by">Powered By News API</span>
   </div>
 </template>
 
@@ -372,6 +392,37 @@ export default {
 
     & label {
       padding-left: 10px;
+    }
+  }
+
+  .avatar {
+    display: none;
+  }
+
+  .toolbar-small {
+    display: none;
+  }
+
+  .powered-by {
+    text-align: center;
+  }
+
+  @media only screen and (max-width: 700px) {
+    .toolbar {
+      display: none;
+    }
+
+    .toolbar-small {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .avatar {
+      display: block;
+      font-size: 1.2rem;
+      margin-left: 10px;
+      display: flex;
+      align-items: center;
     }
   }
 </style>
