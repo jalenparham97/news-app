@@ -80,6 +80,22 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    async loadUserFeed({ state, commit }, email) {
+      if (state.user) {
+        const feedRef = db.collection(`users/${email}/feed`)
+    
+        await feedRef.onSnapshot(snapShot => {
+          let headlines = []
+          snapShot.docs.forEach(doc => {
+            headlines.push(doc.data())
+          })
+          commit('setFeed', headlines)
+        })
+      }
+    },
+    ////////////////////////
+    // HEADLINE FUNCTIONS //
+    ////////////////////////
     async loadHeadlines({ commit }, apiUrl) {
       commit('setLoading', true)
       const response = await axios.get(apiUrl)
@@ -126,6 +142,14 @@ export default new Vuex.Store({
         }
       })
     },
+    async removeHeadline({ state }, headline) {
+      const headlineRef = db.collection(`users/${state.user.email}/feed`).doc(headline.title)
+
+      await headlineRef.delete()
+    },
+    ///////////////////////
+    // COMMENT FUNCTIONS //
+    ///////////////////////
     async addComment({ state, commit }, comment) {
       const commentsRef = db.collection(`headlines/${state.headline.slug}/comments`)
 
@@ -141,6 +165,26 @@ export default new Vuex.Store({
       })
 
       commit('setLoading', false)
+    },
+    async getLikedAndDislikedComments({ state, commit }) {
+      const likedCommentsRef = db.collection(`users/${state.user.email}/likedComments`)
+      const dislikedCommentsRef = db.collection(`users/${state.user.email}/dislikedComments`)
+
+      await likedCommentsRef.get().then(snapShot => {
+        const likedComments = []
+        snapShot.docs.forEach(doc => {
+          likedComments.push({...doc.data()})
+        })
+        commit('setLikedComments', likedComments)
+      })
+
+      await dislikedCommentsRef.get().then(snapShot => {
+        const dislikedComments = []
+        snapShot.docs.forEach(doc => {
+          dislikedComments.push({...doc.data()})
+        })
+        commit('setDislikedComments', dislikedComments)
+      })
     },
     async likeComment({ state, commit }, comment) {
       const commentsRef = db.collection(`headlines/${state.headline.slug}/comments`).orderBy('publishedAt', 'desc')
@@ -298,26 +342,9 @@ export default new Vuex.Store({
         await headlineRef.set({...headline, likes: 0, dislikes: 0})
       }
     },
-    async loadUserFeed({ state, commit }, email) {
-      if (state.user) {
-        const feedRef = db.collection(`users/${email}/feed`)
-    
-        await feedRef.onSnapshot(snapShot => {
-          let headlines = []
-          snapShot.docs.forEach(doc => {
-            headlines.push(doc.data())
-          })
-          commit('setFeed', headlines)
-        })
-      }
-    },
-    async removeHeadline({ state }, headline) {
-      const headlineRef = db.collection(`users/${state.user.email}/feed`).doc(headline.title)
-
-      await headlineRef.delete()
-    },
-
-    // AUTHENTICATION
+    ////////////////////
+    // AUTHENTICATION //
+    ////////////////////
     async signup({ commit }, userPayload) {
       try {
         commit('setLoading', true)

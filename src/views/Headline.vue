@@ -108,7 +108,7 @@ export default {
   }),
   async created() {
     await this.$store.dispatch('loadHeadline', this.$route.params.headline)
-    // await this.$store.dispatch('getLikedComments')
+    await this.$store.dispatch('getLikedAndDislikedComments')
   },
   computed: {
     headline() {
