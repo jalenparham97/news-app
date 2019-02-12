@@ -3,7 +3,7 @@
     <div class="md-layout-item md-size-75 md-small-size-80 md-xsmall-100">
       <!-- Headline Markup -->
       <md-card class="main-card">
-        <md-card-media >
+        <md-card-media>
           <img :src="headline.urlToImage" :alt="headline.title">
         </md-card-media>
 
@@ -11,14 +11,33 @@
           <div class="md-title">
             <a :href="headline.url" target="_blank">{{ headline.title }}</a>
           </div>
-          <div>
-            {{ headline.source.name }}
-            <md-icon>book</md-icon>
+          <div class="article-data">
+
+            <div class="article-meta-data">
+              <div>
+                {{ headline.source.name }}
+                <md-icon>book</md-icon>
+              </div>
+              <span class="md-subhead" v-if="headline.author">
+                {{ headline.author }}
+                <md-icon>face</md-icon>
+              </span>
+            </div>
+            <div class="article-likes">
+              <span class="article-like-btn">
+                <md-button class="md-icon-button md-ripple" @click="likeHeadline(headline)" :disabled="loading || !user" :class="isLikedHeadline(headline.title)">
+                  <md-icon>thumb_up</md-icon>
+                </md-button>
+                <span class="like-count" v-if="headline.likes !== 0">{{ headline.likes }}</span>
+              </span>
+              <span class="article-like-btn">
+                <md-button class="md-icon-button md-ripple" @click="dislikeHeadline(headline)" :disabled="loading || !user" :class="isDisLikedHeadline(headline.title)">
+                  <md-icon>thumb_down</md-icon>
+                </md-button>
+                <span class="dislike-count" v-if="headline.dislikes !== 0">{{ headline.dislikes }}</span>
+              </span>
+            </div>
           </div>
-          <span class="md-subhead" v-if="headline.author">
-            {{ headline.author }}
-            <md-icon>face</md-icon>
-          </span>
         </md-card-header>
 
         <md-card-content>
@@ -30,7 +49,6 @@
       <form @submit.prevent="addComment">
         <md-field>
           <md-textarea @click="showActions = true" md-autogrow placeholder="Add a public comment..." v-model="comment" :disabled="loading || !user"></md-textarea>
-          <!-- <md-icon>description</md-icon> -->
         </md-field>
         <div class="actions" v-if="showActions">
           <md-button class="md-primary md-raised comment-btn" type="submit" :disabled="loading || !user">Comment</md-button>
@@ -49,11 +67,20 @@
               <div class="comment-text">
                 <p>{{ comment.text }}</p>
               </div>
-              <div class="likes">
-                <md-button class="md-icon-button md-ripple like-btn" @click="likeComment(comment.id)" :disabled="loading || !user">
-                  <md-icon class="icon">thumb_up</md-icon>
-                </md-button>
-                <span class="like-count" v-if="comment.likes !== 0">{{ comment.likes }}</span>
+              <div class="likes-container">
+                <span class="likes">
+                  <md-button class="md-icon-button md-ripple like-btn" @click="likeComment(comment)" :disabled="loading || !user" :class="isLikedComment(comment)">
+                    <md-icon class="icon">thumb_up</md-icon>
+                  </md-button>
+                  <span class="like-count" v-if="comment.likes !== 0">{{ comment.likes }}</span>
+                </span>
+                <span class="dislikes">
+                  <md-button class="md-icon-button md-ripple like-btn" @click="dislikeComment(comment)" :disabled="loading || !user" :class="isdislikedComment(comment)">
+                    <md-icon class="icon">thumb_down</md-icon>
+                  </md-button>
+                  <span class="dislike-count" v-if="comment.dislikes !== 0">{{ comment.dislikes }}</span>
+                </span>
+
               </div>
             </div>
           </div>
@@ -81,6 +108,7 @@ export default {
   }),
   async created() {
     await this.$store.dispatch('loadHeadline', this.$route.params.headline)
+    // await this.$store.dispatch('getLikedComments')
   },
   computed: {
     headline() {
@@ -91,36 +119,116 @@ export default {
     },
     user() {
       return this.$store.getters.user
+    },
+    likedHeadlines() {
+      return this.$store.getters.likedHeadlines
+    },
+    dislikedHeadlines() {
+      return this.$store.getters.dislikedHeadlines
+    },
+    likedComments() {
+      return this.$store.getters.likedComments
+    },
+    dislikedComments() {
+      return this.$store.getters.dislikedComments
     }
   },
   methods: {
     async addComment() {
-      const comment = {
-        id: uuidv4(),
-        text: this.comment,
-        user: this.getCommentUserData(),
-        publishedAt: Date.now(),
-        likes: 0
+      if (this.comment !== '') {
+        const comment = {
+          id: uuidv4(),
+          text: this.comment,
+          user: this.getCommentUserData(),
+          publishedAt: Date.now(),
+          likes: 0,
+          dislikes: 0
+        }
+        await this.$store.dispatch('addComment', comment)
+        this.showActions = false
+        this.comment = ''
       }
-      await this.$store.dispatch('addComment', comment)
-      this.showActions = false
-      this.comment = ''
     },
     getCommentUserData() {
       const commentUserData = { ...this.user }
       commentUserData['username'] = commentUserData['email'].split('@')[0]
       return commentUserData
     },
-    async likeComment(commentId) {
-      await this.$store.dispatch('likeComment', commentId)
+    async likeComment(comment) {
+      const likedComment = this.likedComments.findIndex(likedComment => likedComment.id === comment.id) > -1
+      const dislikedComment = this.dislikedComments.findIndex(dislikedComment => dislikedComment.id === comment.id) > -1
+
+      if (likedComment) {
+        await this.$store.dispatch('deleteLikedComment', comment)
+      } else {
+        await this.$store.dispatch('likeComment', comment)
+        if (dislikedComment) {
+          this.$store.dispatch('deleteDislikedComment', comment)
+        }
+      }
     },
+    async dislikeComment(comment) {
+      const dislikedComment = this.dislikedComments.findIndex(dislikedComment => dislikedComment.id === comment.id) > -1
+      const likedComment = this.likedComments.findIndex(likedComment => likedComment.id === comment.id) > -1 
+
+      if (dislikedComment) {
+        await this.$store.dispatch('deleteDislikedComment', comment)
+      } else {
+        await this.$store.dispatch('dislikeComment', comment)
+        if (likedComment) {
+          this.$store.dispatch('deleteLikedComment', comment)
+        }
+      }
+    },
+    // async likeHeadline(headline) {
+    //   const likedHeadline = this.likedHeadlines.findIndex(article => article.title === headline.title) > -1
+    //   const dislikedHeadline = this.dislikedHeadlines.findIndex(article => article.title === headline.title) > -1
+
+    //   if (likedHeadline) {
+    //     await this.$store.dispatch('deleteLikedHeadline', headline)
+    //   } else {
+    //     await this.$store.dispatch('likeHeadline', headline)
+    //     if (dislikedHeadline) { 
+    //       await this.$store.dispatch('deleteDislikedHeadline', headline)
+    //     }
+    //   }
+    // },
+    // async dislikeHeadline(headline) {
+    //   const dislikedHeadline = this.dislikedHeadlines.findIndex(article => article.title === headline.title) > -1
+    //   const likedHeadline = this.likedHeadlines.findIndex(article => article.title === headline.title) > -1
+
+    //   if (dislikedHeadline) {
+    //     await this.$store.dispatch('deleteDislikedHeadline', headline)
+    //   } else  {
+    //     await this.$store.dispatch('dislikeHeadline', headline)
+    //     if (likedHeadline) {
+    //       await this.$store.dispatch('deleteLikedHeadline', headline)
+    //     }
+    //   }
+    // },
     commentTime(time) {
       return moment(time).fromNow()
     },
     cancel() {
       this.comment = ''
       this.showActions = false
-    }
+    },
+    isLikedComment(comment) {
+      const likedComments = this.likedComments.findIndex(likedComment => likedComment.id === comment.id) > -1
+      return likedComments ? 'md-primary' : ''
+    },
+    isdislikedComment(comment) {
+      const dislikedComments = this.dislikedComments.findIndex(dislikedComment => dislikedComment.id === comment.id) > -1
+      return dislikedComments ? 'md-primary' : ''
+    },
+    isLikedHeadline(title) {
+      const likedHeadline = this.likedHeadlines.findIndex(headline => headline.title === title) > -1
+      return likedHeadline ? 'md-primary' : ''
+    },
+    isDisLikedHeadline(title) {
+      const dislikedHeadline = this.dislikedHeadlines.findIndex(headline => headline.title === title) > -1
+      return dislikedHeadline ? 'md-primary' : ''
+    },
   }
 }
 </script>
@@ -131,6 +239,25 @@ export default {
     margin-left: -8px;
   }
 
+  .article-data {
+    display: flex;
+  }
+
+  .article-likes {
+    display: flex;
+    margin-left: 30px;
+  }
+
+  .article-like-btn {
+    display: flex;
+    align-items: center;
+  }
+
+  .like-article-icon {
+    color: #fff !important; 
+    font-size: 20px !important;
+  }
+
   .comments {
     list-style: none;
     padding: 0px;
@@ -139,6 +266,12 @@ export default {
 
   .comment {
     margin-top: 15px;
+  }
+
+  .likes-container {
+    display: flex;
+    align-items: center;
+    margin-top: -10px;
   }
 
   .md-avatar {
@@ -161,10 +294,9 @@ export default {
     margin-top: -5px;
   }
 
-  .likes {
+  .likes, .dislikes {
     display: flex;
     align-items: center;
-    margin-top: -10px;
   }
 
   .like-btn {
