@@ -120,14 +120,6 @@
         </md-select>
       </md-field>
 
-      <!-- <div class="avatar" v-if="user">
-        <div class="img-avatar">
-          <md-avatar class="img"><img :src="user.avatar" alt="user.email"></md-avatar>
-          {{ username }}
-        </div>
-        <md-button @click="logutUser" class="logout-drawer-btn">Logout</md-button>
-      </div> -->
-
       <!-- Default Markup (if Feed Empty) -->
       <md-empty-state class="md-primary" v-if="feed.length === 0 && !user" md-icon="bookmarks" md-label="Nothing in Feed" md-description="Login to bookmark headlines">
         <md-button class="md-primary md-raised"><router-link to="/login" class="login-feed-btn">Login</router-link></md-button>
@@ -208,8 +200,8 @@
               </md-card-media>
 
               <md-card-header>
-                <div class="md-title">
-                  <a :href="headline.url" target="_blank">{{ headline.title }}</a>
+                <div class="md-title title">
+                  <a :href="headline.url" target="_blank" class="card-title">{{ headline.title }}</a>
                 </div>
                 <div @click="loadSource(headline.source.id)">
                   {{ headline.source.name }}
@@ -482,6 +474,14 @@ export default {
 
   .headline {
     padding: 0px 10px;
+  }
+
+  .md-title {
+    & a.card-title {
+      &:hover {
+        text-decoration: none;
+      }
+    }
   }
 
   .brand {
