@@ -30,7 +30,7 @@
           <md-button>
             <router-link to="/login" class="nav-btn">Login</router-link>
           </md-button>
-          <md-button class="md-primary" @click="showSearchDialog = true">Search</md-button>
+          <md-button class="md-primary" @click="showDialog">Search</md-button>
         </template>
 
         <!-- Search Dialog -->
@@ -73,7 +73,7 @@
       </div>
 
       <div class="md-toolbar-section-end toolbar-small">
-        <md-button class="md-primary" @click="showSearchDialog = true">Search</md-button>
+        <md-button class="md-primary" @click="showDialog">Search</md-button>
         <md-button 
           class="md-accent" 
           @click="showRightpanel = true"
@@ -208,7 +208,10 @@
       </md-content>
     </div>
 
-    <span class="powered-by">Powered By News API</span>
+    <div class="footer-container">
+      <md-button @click="loadMoreHeadlines" class="load-more md-primary">Load More</md-button>
+      <span class="powered-by">Powered By News API</span>
+    </div>
   </div>
 </template>
 
@@ -235,14 +238,18 @@ export default {
     query: '',
     fromDate: '',
     toDate: '',
-    sortBy: ''
+    sortBy: '',
+    pageSize: 21,
+    page: 1
   }),
   async created() {
-    await this.$store.dispatch('loadHeadlines', `https://newsapi.org/v2/top-headlines?country=${this.$store.state.country}&category=${this.$store.state.category}&pageSize=21&apiKey=${env.API_KEY}`)
+    this.page = 1
+    await this.$store.dispatch('loadHeadlines', `https://newsapi.org/v2/top-headlines?country=${this.$store.state.country}&category=${this.$store.state.category}&pageSize=${this.pageSize}&apiKey=${env.API_KEY}`)
   },
   watch: {
     async country() {
-      await this.$store.dispatch('loadHeadlines', `https://newsapi.org/v2/top-headlines?country=${this.country}&category=${this.category}&pageSize=21&apiKey=${env.API_KEY}`)
+      this.page = 1
+      await this.$store.dispatch('loadHeadlines', `https://newsapi.org/v2/top-headlines?country=${this.country}&category=${this.category}&pageSize=${this.pageSize}&page=${this.page}&apiKey=${env.API_KEY}`)
     }
   },
   computed: {
@@ -276,13 +283,15 @@ export default {
   },
   methods: {
     async loadCategory(category) {
+      this.page = 1
       this.$store.commit('setCategory', category)
-      await this.$store.dispatch('loadHeadlines', `https://newsapi.org/v2/top-headlines?country=${this.country}&category=${this.category}&pageSize=21&apiKey=${env.API_KEY}`)
+      await this.$store.dispatch('loadHeadlines', `https://newsapi.org/v2/top-headlines?country=${this.country}&category=${this.category}&pageSize=${this.pageSize}&page=${this.page}&apiKey=${env.API_KEY}`)
     },
     async loadSource(sourceId) {
       if (sourceId) {
+        this.page = 1
         this.$store.commit('setSource', sourceId)
-        await this.$store.dispatch('loadHeadlines', `https://newsapi.org/v2/top-headlines?sources=${this.source}&pageSize=21&apiKey=${env.API_KEY}`)
+        await this.$store.dispatch('loadHeadlines', `https://newsapi.org/v2/top-headlines?sources=${this.source}&pageSize=${this.pageSize}&page=${this.page}&apiKey=${env.API_KEY}`)
       }
     },
     changeCountry(country) {
@@ -316,12 +325,8 @@ export default {
       })
     },
     async search() {
-      await this.$store.dispatch('loadHeadlines', `https://newsapi.org/v2/everything?q=${this.query}&from=${this.dateToISOString(this.fromDate)}&to=${this.dateToISOString(this.toDate)}&sortBy=${this.sortBy}&pageSize=21&apiKey=1c5d1a7c798548e89c61bd4a6db4af54`)
-
-      this.query = ''
-      this.fromDate = ''
-      this.toDate = ''
-      this.sortBy = ''
+      this.page = 1
+      await this.$store.dispatch('loadHeadlines', `https://newsapi.org/v2/everything?q=${this.query}&from=${this.dateToISOString(this.fromDate)}&to=${this.dateToISOString(this.toDate)}&sortBy=${this.sortBy}&pageSize=${this.pageSize}&page=${this.page}&apiKey=${env.API_KEY}`)
 
       this.showSearchDialog = false
     },
@@ -335,6 +340,28 @@ export default {
       username['username'] = username['email'].split('@')[0]
       return username
     },
+    async loadMoreHeadlines() {
+      if (this.query !== '') {
+        this.page++
+        console.log('Page number', this.page)
+        await this.$store.dispatch('loadMoreHeadlines', `https://newsapi.org/v2/everything?q=${this.query}&from=${this.dateToISOString(this.fromDate)}&to=${this.dateToISOString(this.toDate)}&sortBy=${this.sortBy}&pageSize=${this.pageSize}&page=${this.page}&apiKey=${env.API_KEY}`)
+        console.log('Search')
+        console.log(this.headlines)
+      } else {
+        this.page++
+        console.log('Page number', this.page)
+        await this.$store.dispatch('loadMoreHeadlines', `https://newsapi.org/v2/top-headlines?country=${this.$store.state.country}&category=${this.$store.state.category}&pageSize=${this.pageSize}&page=${this.page}&apiKey=${env.API_KEY}`)
+        console.log(this.headlines)
+      }
+    },
+    showDialog() {
+      this.query = ''
+      this.fromDate = ''
+      this.toDate = ''
+      this.sortBy = ''
+
+      this.showSearchDialog = true
+    }
   }
 }
 </script>
@@ -405,6 +432,11 @@ export default {
 
   .powered-by {
     text-align: center;
+  }
+
+  .footer-container {
+    display: flex;
+    flex-direction: column;
   }
 
   @media only screen and (max-width: 700px) {

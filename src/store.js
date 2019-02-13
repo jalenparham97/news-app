@@ -29,6 +29,9 @@ export default new Vuex.Store({
     setHeadlines: (state, headlines) => {
       state.headlines = headlines
     },
+    setMoreHeadlines: (state, headline) => {
+      state.headlines.push(headline)
+    },
     setLikedHeadlines: (state, likedHeadlines) => {
       state.likedHeadlines = likedHeadlines
     },
@@ -112,6 +115,33 @@ export default new Vuex.Store({
         return headline
       })
       commit('setHeadlines', headlines)
+      commit('setLoading', false)
+    },
+    async loadMoreHeadlines({ state, commit }, apiUrl) {
+      commit('setLoading', true)
+      const response = await axios.get(apiUrl)
+      if (state.headlines.length <= response.data.totalResults) {
+        const headlines = response.data.articles.map(article => {
+          const slug = slugify(article.title, {
+            replacement: '-',
+            remove: /[^a-zA-Z0-9 -]/g,
+            lower: true
+          })
+          if (!article.urlToImage) {
+            article.urlToImage = defaultImage
+          }
+          const headline = { ...article, slug }
+          return headline
+        })
+        headlines.forEach(headline => {
+          // console.log(headline)
+          commit('setMoreHeadlines', headline)
+        })
+      }
+      console.log(state.headlines.length)
+      console.log(response.data.totalResults)
+      // commit('setMoreHeadlines', headlines)
+      // console.log(headlines)
       commit('setLoading', false)
     },
     async addHeadlineToFeed({ state }, headline) {
