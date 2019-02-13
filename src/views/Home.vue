@@ -11,7 +11,7 @@
         NewsCycle
       </router-link>
 
-      <div class="md-toolbar-section-end toolbar">
+      <div class="md-toolbar-section-end md-toolbar-row toolbar">
         <template v-if="isAuthenticated">
           <md-button>
             <md-avatar><img :src="user.avatar" alt="user.email"></md-avatar>
@@ -63,13 +63,6 @@
             <md-button class="md-primary" @click="search">Search</md-button>
           </md-dialog-actions>
         </md-dialog>
-
-        <md-button 
-          class="md-accent" 
-          @click="showRightpanel = true"
-        >
-          Categories
-        </md-button>
       </div>
 
       <div class="md-toolbar-section-end toolbar-small">
@@ -163,6 +156,23 @@
 
     <!-- App Content -->
     <div class="md-layout-item md-size-95">
+      <div class="header-content" v-if="!user">
+        <h1 class="header-title">BE INFORMED</h1>
+        <h1 class="header-title"><span>BE INSPIRED</span></h1>
+
+        <h1 class="header-subtitle">Get Top Stories Anytime</h1>
+
+        <md-button class="md-raised header-action-btn md-accent " :md-ripple="false" @click="$router.push('/signup')">Sign Up</md-button>
+      </div>
+
+      <div class="categories-nav" ref="categoryNav">
+        <div class="categories-container">
+          <h2 v-for="(newsCategory, i) in newsCategories" :key="i" class="news-category" :class="newsCategory.path === category ? 'highlight' : ''" @click="loadCategory(newsCategory.path)">
+            {{ newsCategory.name }}
+          </h2>
+        </div>
+      </div>
+
       <md-content class="md-layout" style="background: #303030;">
         <ul v-for="headline in headlines" :key="headline.id" class="md-layout-item md-large-size-25 md-medium-size-33 md-small-size-50 md-xsmall-size-100 headline">
           <md-card style="margin-top: 1em;" md-with-hover>
@@ -246,6 +256,9 @@ export default {
     this.page = 1
     await this.$store.dispatch('loadHeadlines', `https://newsapi.org/v2/top-headlines?country=${this.$store.state.country}&category=${this.$store.state.category}&pageSize=${this.pageSize}&apiKey=${env.API_KEY}`)
   },
+  mounted() {
+    this.fixedCategoryNav()
+  },
   watch: {
     async country() {
       this.page = 1
@@ -313,6 +326,26 @@ export default {
       const inFeed = this.feed.findIndex(headline => headline.title === title) > -1
       return inFeed ? 'md-primary' : ''
     },
+    fixedCategoryNav() {
+      window.onscroll = () => {
+        const header = this.$refs.categoryNav
+
+        if (!this.user) {
+          if (window.pageYOffset > 400) {
+            header.classList.add('fixed-category-nav');
+          } else {
+            header.classList.remove("fixed-category-nav");
+          }
+        } else {
+          if (window.pageYOffset > 20) {
+            header.classList.add('fixed-category-nav');
+          } else {
+            header.classList.remove("fixed-category-nav");
+          }
+        }
+        
+      }
+    },
     formatDate(date) {
       return moment(date).format('MMM Do YYYY, h:mm a')
     },
@@ -367,6 +400,60 @@ export default {
 </script>
 
 <style scoped lang="scss">
+  .highlight {
+    color: #00E677;
+  }
+
+  .header-content {
+    padding: 60px 0px;
+    text-align: center;
+  }
+
+  .header-title {
+    font-size: 4rem;
+  }
+
+  .header-title span {
+    border-bottom: 10px solid #FF1644;
+  }
+
+  .header-subtitle {
+    padding-top: 20px;
+  }
+
+  .header-action-btn {
+    margin-top: 40px;
+    height: 60px;
+    padding: 0px 40px;
+    font-size: 1.2rem;
+  }
+
+  .categories-container {
+    display: flex;
+    justify-content: space-around;
+    border-bottom: 1px solid #fff;
+    width: 98.5%;
+    margin: 30px auto auto auto;
+
+    & h2 {
+      cursor: pointer;
+    }
+  }
+
+  .fixed-category-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    margin: 50px auto auto auto;
+    width: 100%;
+    background: #212121;
+
+    & .categories-container {
+      border: none;
+    }
+  }
+
   .headline {
     padding: 0px 10px;
   }
@@ -386,7 +473,7 @@ export default {
   .fixed-toolbar {
     position: fixed;
     top: 0;
-    z-index: 5;
+    z-index: 100;
   }
 
   .feed-list {
@@ -439,6 +526,28 @@ export default {
     flex-direction: column;
   }
 
+  @media only screen and (max-width: 960px) {
+    .fixed-category-nav {
+      margin-top: 40px;
+    }
+  }
+
+  @media only screen and (max-width: 840px) {
+    .news-category {
+      font-size: 16px;
+    }
+  }
+
+  @media only screen and (max-width: 720px) {
+    .categories-nav {
+      display: none;
+    }
+
+    .fixed-category-nav {
+      display: none;
+    }
+  }
+
   @media only screen and (max-width: 700px) {
     .toolbar {
       display: none;
@@ -456,6 +565,20 @@ export default {
       margin-left: 10px;
       display: flex;
       align-items: center;
+    }
+  }
+
+  @media only screen and (max-width: 500px) {
+    .header-title {
+      font-size: 3rem;
+    }
+
+    .header-title span {
+      border-bottom: 7.5px solid #fff;
+    }
+
+    .header-subtitle {
+      font-size: 1.5rem;
     }
   }
 </style>
