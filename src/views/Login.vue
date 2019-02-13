@@ -165,8 +165,9 @@ export default {
   }
 
   .snackbar {
-    background: #424242 !important;
+    background: #FF1644 !important;
     color: #fff !important;
+    font-size: 1.2rem !important;
   }
 </style>
 
