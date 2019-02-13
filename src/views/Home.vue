@@ -22,7 +22,7 @@
 
             <md-menu-content>
               <md-list>
-                <md-list-item @click="logutUser">
+                <md-list-item @click="logout">
                   <md-icon class="md-primary">lock_open</md-icon>
                   <span class="md-list-item-text">
                     Logout
@@ -34,13 +34,13 @@
         </template>
 
         <template v-else>
+          <md-button class="md-primary" @click="showDialog">Search</md-button>
           <md-button>
             <router-link to="/signup" class="nav-btn">Sign Up</router-link>
           </md-button>
           <md-button>
             <router-link to="/login" class="nav-btn">Login</router-link>
           </md-button>
-          <md-button class="md-primary" @click="showDialog">Search</md-button>
         </template>
 
         <!-- Search Dialog -->
@@ -83,7 +83,7 @@
         >
           <md-icon>apps</md-icon>
         </md-button>
-        <md-menu md-size="medium" md-align-trigger>
+        <md-menu md-size="medium" md-align-trigger v-if="user">
           <md-button md-menu-trigger>
             <md-avatar><img :src="user.avatar" alt="user.email"></md-avatar>
           </md-button>
@@ -328,7 +328,7 @@ export default {
     changeCountry(country) {
       this.$store.commit('setCountry', country)
     },
-    logutUser() {
+    logout() {
       this.$store.dispatch('logout')
     },
     async addHeadlineToFeed(headline) {
@@ -572,9 +572,7 @@ export default {
     .fixed-category-nav {
       display: none;
     }
-  }
 
-  @media only screen and (max-width: 700px) {
     .toolbar {
       display: none;
     }
