@@ -13,14 +13,24 @@
 
       <div class="md-toolbar-section-end md-toolbar-row toolbar">
         <template v-if="isAuthenticated">
-          <md-button>
-            <md-avatar><img :src="user.avatar" alt="user.email"></md-avatar>
-            {{ username }}
-          </md-button>
-
           <md-button class="md-primary" @click="showSearchDialog = true">Search</md-button>
+          <md-menu md-size="medium" md-align-trigger>
+            <md-button md-menu-trigger>
+              <md-avatar><img :src="user.avatar" alt="user.email"></md-avatar>
+            {{ username }}
+            </md-button>
 
-          <md-button @click="logutUser">Logout</md-button>
+            <md-menu-content>
+              <md-list>
+                <md-list-item @click="logutUser">
+                  <md-icon class="md-primary">lock_open</md-icon>
+                  <span class="md-list-item-text">
+                    Logout
+                  </span>
+                </md-list-item>
+              </md-list>
+            </md-menu-content>
+          </md-menu>
         </template>
 
         <template v-else>
@@ -66,13 +76,29 @@
       </div>
 
       <div class="md-toolbar-section-end toolbar-small">
-        <md-button class="md-primary" @click="showDialog">Search</md-button>
+        <md-button class="md-icon-button" @click="showDialog"><md-icon>search</md-icon></md-button>
         <md-button 
-          class="md-accent" 
+          class="md-icon-button" 
           @click="showRightpanel = true"
         >
-          Categories
+          <md-icon>apps</md-icon>
         </md-button>
+        <md-menu md-size="medium" md-align-trigger>
+          <md-button md-menu-trigger>
+            <md-avatar><img :src="user.avatar" alt="user.email"></md-avatar>
+          </md-button>
+
+          <md-menu-content>
+            <md-list>
+              <md-list-item @click="logutUser">
+                <md-icon class="md-primary">lock_open</md-icon>
+                <span class="md-list-item-text">
+                  Logout
+                </span>
+              </md-list-item>
+            </md-list>
+          </md-menu-content>
+        </md-menu>
       </div>
     </md-toolbar>
 
@@ -94,13 +120,13 @@
         </md-select>
       </md-field>
 
-      <div class="avatar" v-if="user">
+      <!-- <div class="avatar" v-if="user">
         <div class="img-avatar">
           <md-avatar class="img"><img :src="user.avatar" alt="user.email"></md-avatar>
           {{ username }}
         </div>
         <md-button @click="logutUser" class="logout-drawer-btn">Logout</md-button>
-      </div>
+      </div> -->
 
       <!-- Default Markup (if Feed Empty) -->
       <md-empty-state class="md-primary" v-if="feed.length === 0 && !user" md-icon="bookmarks" md-label="Nothing in Feed" md-description="Login to bookmark headlines">
@@ -556,14 +582,6 @@ export default {
     .toolbar-small {
       display: flex;
       justify-content: flex-end;
-      align-items: center;
-    }
-
-    .avatar {
-      display: block;
-      font-size: 1.2rem;
-      margin-left: 10px;
-      display: flex;
       align-items: center;
     }
   }
