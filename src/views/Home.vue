@@ -90,7 +90,7 @@
 
           <md-menu-content>
             <md-list>
-              <md-list-item @click="logutUser">
+              <md-list-item @click="logout">
                 <md-icon class="md-primary">lock_open</md-icon>
                 <span class="md-list-item-text">
                   Logout
@@ -590,7 +590,7 @@ export default {
     }
 
     .header-title span {
-      border-bottom: 7.5px solid #fff;
+      border-bottom: 7.5px solid #FF1644;
     }
 
     .header-subtitle {
