@@ -35,12 +35,8 @@
 
         <template v-else>
           <md-button class="md-primary" @click="showDialog">Search</md-button>
-          <md-button>
-            <router-link to="/signup" class="nav-btn">Sign Up</router-link>
-          </md-button>
-          <md-button>
-            <router-link to="/login" class="nav-btn">Login</router-link>
-          </md-button>
+          <md-button @click="$router.push('/signup')">Sign Up</md-button>
+          <md-button @click="$router.push('/login')">Login</md-button>
         </template>
 
         <!-- Search Dialog -->
