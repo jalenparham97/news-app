@@ -22,20 +22,9 @@
                 {{ headline.author }}
                 <md-icon>face</md-icon>
               </span>
-            </div>
-            <div class="article-likes">
-              <span class="article-like-btn">
-                <md-button class="md-icon-button md-ripple" @click="likeHeadline(headline)" :disabled="loading || !user" :class="isLikedHeadline(headline.title)">
-                  <md-icon>thumb_up</md-icon>
-                </md-button>
-                <span class="like-count" v-if="headline.likes !== 0">{{ headline.likes }}</span>
-              </span>
-              <span class="article-like-btn">
-                <md-button class="md-icon-button md-ripple" @click="dislikeHeadline(headline)" :disabled="loading || !user" :class="isDisLikedHeadline(headline.title)">
-                  <md-icon>thumb_down</md-icon>
-                </md-button>
-                <span class="dislike-count" v-if="headline.dislikes !== 0">{{ headline.dislikes }}</span>
-              </span>
+              <md-button @click="addHeadlineToFeed(headline)" class="md-icon-button" :class="isInFeed(headline.title)">
+                <md-icon>bookmark</md-icon>
+              </md-button>
             </div>
           </div>
         </md-card-header>
@@ -80,7 +69,6 @@
                   </md-button>
                   <span class="dislike-count" v-if="comment.dislikes !== 0">{{ comment.dislikes }}</span>
                 </span>
-
               </div>
             </div>
           </div>
@@ -109,8 +97,12 @@ export default {
   async created() {
     await this.$store.dispatch('loadHeadline', this.$route.params.headline)
     await this.$store.dispatch('getLikedAndDislikedComments')
+    await this.$store.dispatch('loadUserFeed', this.user.email)
   },
   computed: {
+    feed() {
+      return this.$store.getters.feed
+    },
     headline() {
       return this.$store.getters.headline
     },
@@ -118,7 +110,7 @@ export default {
       return this.$store.getters.loading
     },
     user() {
-      return this.$store.getters.user
+      return this.$store.getters.user 
     },
     likedHeadlines() {
       return this.$store.getters.likedHeadlines
@@ -180,32 +172,6 @@ export default {
         }
       }
     },
-    // async likeHeadline(headline) {
-    //   const likedHeadline = this.likedHeadlines.findIndex(article => article.title === headline.title) > -1
-    //   const dislikedHeadline = this.dislikedHeadlines.findIndex(article => article.title === headline.title) > -1
-
-    //   if (likedHeadline) {
-    //     await this.$store.dispatch('deleteLikedHeadline', headline)
-    //   } else {
-    //     await this.$store.dispatch('likeHeadline', headline)
-    //     if (dislikedHeadline) { 
-    //       await this.$store.dispatch('deleteDislikedHeadline', headline)
-    //     }
-    //   }
-    // },
-    // async dislikeHeadline(headline) {
-    //   const dislikedHeadline = this.dislikedHeadlines.findIndex(article => article.title === headline.title) > -1
-    //   const likedHeadline = this.likedHeadlines.findIndex(article => article.title === headline.title) > -1
-
-    //   if (dislikedHeadline) {
-    //     await this.$store.dispatch('deleteDislikedHeadline', headline)
-    //   } else  {
-    //     await this.$store.dispatch('dislikeHeadline', headline)
-    //     if (likedHeadline) {
-    //       await this.$store.dispatch('deleteLikedHeadline', headline)
-    //     }
-    //   }
-    // },
     commentTime(time) {
       return moment(time).fromNow()
     },
@@ -228,6 +194,15 @@ export default {
     isDisLikedHeadline(title) {
       const dislikedHeadline = this.dislikedHeadlines.findIndex(headline => headline.title === title) > -1
       return dislikedHeadline ? 'md-primary' : ''
+    },
+    async addHeadlineToFeed(headline) {
+      if (this.user) {
+        await this.$store.dispatch('addHeadlineToFeed', headline)
+      }
+    },
+    isInFeed(title) {
+      const inFeed = this.feed.findIndex(headline => headline.title === title) > -1
+      return inFeed ? 'md-primary' : ''
     },
   }
 }
@@ -305,6 +280,11 @@ export default {
 
   .icon {
     font-size: 18px !important;
+  }
+
+  .article-meta-data {
+    display: flex;
+    flex-direction: column;
   }
 
   @media only screen and (max-width: 700px) {

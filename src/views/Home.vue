@@ -221,7 +221,7 @@
                 <md-button @click="addHeadlineToFeed(headline)" class="md-icon-button" :class="isInFeed(headline.title)">
                   <md-icon>bookmark</md-icon>
                 </md-button>
-
+                
                 <md-button @click="saveHeadline(headline)" class="md-icon-button">
                   <md-icon>message</md-icon>
                 </md-button>
@@ -416,6 +416,10 @@ export default {
 <style scoped lang="scss">
   .highlight {
     color: #00E677;
+  }
+
+  .tooltip {
+    margin-top: -10px
   }
 
   .header-content {
