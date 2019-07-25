@@ -1,6 +1,8 @@
 <template>
   <div class="md-layout md-alignment-center-center" style="height: 100vh;">
-    <md-card class="md-layout-item md-large-size-50 md-medium-size-80 md-small-size-95 md-xsmall-size-100">
+    <md-card
+      class="md-layout-item md-xlarge-size-40 md-large-size-50 md-medium-size-50 md-small-size-95 md-xsmall-size-100"
+    >
       <md-card-header>
         <div class="title">Login</div>
       </md-card-header>
@@ -19,16 +21,36 @@
         <md-card-content>
           <md-field md-clearable :class="getValidationClass('email')">
             <label for="email">Email</label>
-            <md-input :disabled="loading" type="email" name="email" id="email" autocomplete="email" v-model="form.email"/> 
+            <md-input
+              :disabled="loading"
+              type="email"
+              name="email"
+              id="email"
+              autocomplete="email"
+              v-model="form.email"
+            />
             <span class="md-error" v-if="!$v.form.email.required">The email is required</span>
             <span class="md-error" v-else-if="!$v.form.email">Invalid email</span>
           </md-field>
           <md-field :class="getValidationClass('password')">
             <label for="password">Password</label>
-            <md-input :disabled="loading" type="password" name="password" id="password" autocomplete="password" v-model="form.password"/> 
+            <md-input
+              :disabled="loading"
+              type="password"
+              name="password"
+              id="password"
+              autocomplete="password"
+              v-model="form.password"
+            />
             <span class="md-error" v-if="!$v.form.password.required">The password is required</span>
-            <span class="md-error" v-else-if="!$v.form.password.minLength">Password must be between 6 and 20 charaters</span>
-            <span class="md-error" v-else-if="!$v.form.password.maxLength">Password must be between 6 and 20 charaters</span>
+            <span
+              class="md-error"
+              v-else-if="!$v.form.password.minLength"
+            >Password must be between 6 and 20 charaters</span>
+            <span
+              class="md-error"
+              v-else-if="!$v.form.password.maxLength"
+            >Password must be between 6 and 20 charaters</span>
           </md-field>
         </md-card-content>
 
@@ -45,9 +67,10 @@
         </md-card-actions>
       </form>
 
-      <md-snackbar :md-active.sync="isAuthenticated" class="snackbar">
-        {{ form.email || 'user' }} was successfully logged in!
-      </md-snackbar>
+      <md-snackbar
+        :md-active.sync="isAuthenticated"
+        class="snackbar"
+      >{{ form.email || 'user' }} was successfully logged in!</md-snackbar>
     </md-card>
 
     <!-- Back Button -->
@@ -58,15 +81,20 @@
 </template>
 
 <script>
-import { validationMixin } from 'vuelidate'
-import { required, email, minLength, maxLength } from 'vuelidate/lib/validators'
+import { validationMixin } from "vuelidate";
+import {
+  required,
+  email,
+  minLength,
+  maxLength
+} from "vuelidate/lib/validators";
 
 export default {
   mixins: [validationMixin],
   data: () => ({
     form: {
-      email: '',
-      password: ''
+      email: "",
+      password: ""
     }
   }),
   validations: {
@@ -84,91 +112,91 @@ export default {
   },
   computed: {
     loading() {
-      return this.$store.getters.loading
+      return this.$store.getters.loading;
     },
     isAuthenticated() {
-      return this.$store.getters.isAuthenticated
+      return this.$store.getters.isAuthenticated;
     }
   },
   watch: {
     isAuthenticated(value) {
       if (value) {
-        setTimeout(() => this.$router.push('/'), 2000)
+        setTimeout(() => this.$router.push("/"), 2000);
       }
     }
   },
   methods: {
     validateForm() {
-      this.$v.$touch()
+      this.$v.$touch();
       if (!this.$v.$invalid) {
-        this.loginUser()
+        this.loginUser();
       }
     },
     loginUser() {
-      this.$store.dispatch('login', { ...this.form })
+      this.$store.dispatch("login", { ...this.form });
     },
     loginWithGoogle() {
-      this.$store.dispatch('loginWithGoogle')
+      this.$store.dispatch("loginWithGoogle");
     },
     loginWithFacebook() {
-      this.$store.dispatch('loginWithFacebook')
+      this.$store.dispatch("loginWithFacebook");
     },
     getValidationClass(fieldName) {
-      const field = this.$v.form[fieldName]
+      const field = this.$v.form[fieldName];
       if (field) {
         return {
-          'md-invalid': field.$invalid && field.$dirty
-        }
+          "md-invalid": field.$invalid && field.$dirty
+        };
       }
     }
   }
-}
+};
 </script>
 
 <style scoped lang="scss">
-  .title {
-    text-align: center; 
-    font-size: 2rem;
-    padding: 8px 0;
-  }
+.title {
+  text-align: center;
+  font-size: 2rem;
+  padding: 8px 0;
+}
 
-  .oauth-btns {
-    text-align: center;
-  }
+.oauth-btns {
+  text-align: center;
+}
 
-  .options {
-    text-align: center;
-    font-size: 1.2rem;
-    margin-bottom: -20px;
-  }
+.options {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-bottom: -20px;
+}
 
-  .card-actions {
-    display: flex;
-    flex-direction: column;
-    margin: -20px auto 0 auto;
-  }
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  margin: -20px auto 0 auto;
+}
 
-  .submit-btn {
-    margin: 0 auto;
-  }
+.submit-btn {
+  margin: 0 auto;
+}
 
-  .account-link {
-    margin-top: 8px;
-  }
+.account-link {
+  margin-top: 8px;
+}
 
-  .auth-link {
-    margin-left: 8px;
-  }
+.auth-link {
+  margin-left: 8px;
+}
 
-  .facebook-btn {
-    background: #4267B2 !important;
-  }
+.facebook-btn {
+  background: #4267b2 !important;
+}
 
-  .snackbar {
-    background: #FF1644 !important;
-    color: #fff !important;
-    font-size: 1.2rem !important;
-  }
+.snackbar {
+  background: #ff1644 !important;
+  color: #fff !important;
+  font-size: 1.2rem !important;
+}
 </style>
 
 

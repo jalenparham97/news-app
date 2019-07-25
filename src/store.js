@@ -134,14 +134,9 @@ export default new Vuex.Store({
           return headline
         })
         headlines.forEach(headline => {
-          // console.log(headline)
           commit('setMoreHeadlines', headline)
         })
       }
-      console.log(state.headlines.length)
-      console.log(response.data.totalResults)
-      // commit('setMoreHeadlines', headlines)
-      // console.log(headlines)
       commit('setLoading', false)
     },
     async addHeadlineToFeed({ state }, headline) {
